@@ -9,13 +9,13 @@ interface Tada {
 }
 
 interface TadaFileEntry {
-    timestamp: string;
+    date: string;
     text: string;
 }
 
 function readTadas(): Tada[] {
     return (tadaDatas as TadaFileEntry[]).map((tada, index) => {
-        const [day, month, year] = tada.timestamp.split("/");
+        const [day, month, year] = tada.date.split("/");
         return {
             id: index + 1,
             achieved_at: `${year}-${month}-${day}`,
