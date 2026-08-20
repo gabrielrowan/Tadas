@@ -1,4 +1,4 @@
-import tadaDatas from "../data/tadas.json";
+import { useEffect, useState } from "react";
 import { EmptyState } from "./components/EmptyState";
 import { TadaGroups } from "./components/TadaGroups";
 
@@ -13,8 +13,10 @@ interface TadaFileEntry {
     text: string;
 }
 
-function readTadas(): Tada[] {
-    return (tadaDatas as TadaFileEntry[]).map((tada, index) => {
+async function readTadas(): Promise<Tada[]> {
+    const resp = await fetch(`${import.meta.env.BASE_URL}data/tadas.json`);
+    const tadaDatas: TadaFileEntry[] = await resp.json();
+    return tadaDatas.map((tada, index) => {
         const [day, month, year] = tada.date.split("/");
         return {
             id: index + 1,
@@ -64,8 +66,13 @@ function groupByDay(
 export { groupByDay };
 
 export default function Home() {
-    const tadas = readTadas();
-    const groups = groupByDay(tadas);
+    const [tadas, setTadas] = useState<Tada[] | null>(null);
+
+    useEffect(() => {
+        readTadas().then(setTadas);
+    }, []);
+
+    const groups = tadas ? groupByDay(tadas) : [];
 
     return (
         <main className="min-h-screen px-4 py-10 bg-gradient-to-r from-blue-50 to-fuchsia-50">
@@ -76,7 +83,11 @@ export default function Home() {
                     </h1>
                 </div>
 
-                {tadas.length === 0 ? <EmptyState /> : <TadaGroups groups={groups} />}
+                {tadas && tadas.length === 0 ? (
+                    <EmptyState />
+                ) : (
+                    <TadaGroups groups={groups} />
+                )}
             </div>
         </main>
     );

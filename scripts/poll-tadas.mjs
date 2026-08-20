@@ -13,7 +13,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const TADAS_PATH = path.join(process.cwd(), "data", "tadas.json");
+const TADAS_PATH = path.join(process.cwd(), "public", "data", "tadas.json");
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
