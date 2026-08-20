@@ -4,5 +4,11 @@
     "text": "This is a new test message on the 20th of August.",
     "source": "voice",
     "update_id": 510318111
+  },
+  {
+    "date": "20/08/2026",
+    "text": "This is a new message does it work",
+    "source": "text",
+    "update_id": 510318113
   }
 ]
