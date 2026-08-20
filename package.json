@@ -1,6 +1,5 @@
 {
   "name": "tadas",
-  "homepage": "https://gabrielrowan.github.io/Tadas/",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,13 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
-    "gh-pages": "^6.3.0",
     "lucide-react": "^1.33.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
