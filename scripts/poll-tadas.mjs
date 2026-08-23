@@ -72,6 +72,7 @@ async function transcribe(audioBuffer, updateId)
     const form = new FormData();
     form.append("file", new Blob([audioBuffer], { type: "audio/ogg" }), "voice.ogg");
     form.append("model", "whisper-1");
+    form.append("language", "en");
 
     const resp = await fetch("https://api.openai.com/v1/audio/transcriptions", {
         method: "POST",
