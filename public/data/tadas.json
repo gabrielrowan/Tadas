@@ -28,5 +28,11 @@
     "text": "Got GitHub automated flow working where I can now record a tada and have it appear automatically on the tada website.",
     "source": "voice",
     "update_id": 510318141
+  },
+  {
+    "date": "23/08/2026",
+    "text": "Added additional prompt to open API transcription call, which will helpfully correct the spelling of the word tada.",
+    "source": "voice",
+    "update_id": 510318142
   }
 ]
