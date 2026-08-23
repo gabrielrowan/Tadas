@@ -22,5 +22,11 @@
     "text": "Washed my bedsheets",
     "source": "voice",
     "update_id": 510318140
+  },
+  {
+    "date": "23/08/2026",
+    "text": "Got GitHub automated flow working where I can now record a Tadar and have it appear automatically on the Tadar website.",
+    "source": "voice",
+    "update_id": 510318141
   }
 ]
