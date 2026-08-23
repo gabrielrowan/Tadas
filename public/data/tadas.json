@@ -1,29 +1,5 @@
 [
   {
-    "date": "20/08/2026",
-    "text": "This is a new test message on the 20th of August.",
-    "source": "voice",
-    "update_id": 510318111
-  },
-  {
-    "date": "20/08/2026",
-    "text": "This is a new message does it work",
-    "source": "text",
-    "update_id": 510318113
-  },
-  {
-    "date": "23/08/2026",
-    "text": "Hello, this is a test.",
-    "source": "voice",
-    "update_id": 510318133
-  },
-  {
-    "date": "23/08/2026",
-    "text": "I wonder if this will mean that the github version can work?",
-    "source": "voice",
-    "update_id": 510318134
-  },
-  {
     "date": "23/08/2026",
     "text": "Did a second layer of embroidery on my bag.",
     "source": "voice",
@@ -34,17 +10,5 @@
     "text": "Learnt the word for event in Japanese means a thing that comes and goes.",
     "source": "voice",
     "update_id": 510318136
-  },
-  {
-    "date": "23/08/2026",
-    "text": "Roeddwn i'n mynd i ffwrdd pan nad oeddwn i'n meddwl y byddwn i'n mynd ychydig mwy na'r ffwrdd heddiw.",
-    "source": "voice",
-    "update_id": 510318137
-  },
-  {
-    "date": "23/08/2026",
-    "text": "Hi, this is Anita Da. Have I broken anything?",
-    "source": "voice",
-    "update_id": 510318138
   }
 ]
