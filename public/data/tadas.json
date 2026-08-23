@@ -34,11 +34,5 @@
     "text": "Added additional prompt to open API transcription call, which will helpfully correct the spelling of the word tada.",
     "source": "voice",
     "update_id": 510318142
-  },
-  {
-    "date": "23/08/2026",
-    "text": "[failed to process message]",
-    "source": "voice",
-    "update_id": 510318143
   }
 ]
