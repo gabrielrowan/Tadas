@@ -91,88 +91,87 @@ async function transcribe(audioBuffer, updateId)
         throw new Error(`Whisper transcription failed: ${JSON.stringify(data)}`);
     }
 
-    message = data.text
-    if (message.slice(-1) === '.')
+    const message = (data.text || "").trim();
+    const message_without_full_stop = message.endsWith(".")
+        ? message.slice(0, -1).trim()
+        : message;
+
+    return message_without_full_stop || "[transcription failed]";
+
+    function formatDate(date)
     {
-        message = message.slice(0, -1)
-    }
-    return (message || "[transcription failed]").trim();
-}
-
-function formatDate(date)
-{
-    const parts = new Intl.DateTimeFormat("en-GB", {
-        timeZone: "Europe/London",
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-    }).formatToParts(date);
-    const lookup = Object.fromEntries(parts.map((p) => [p.type, p.value]));
-    return `${lookup.day}/${lookup.month}/${lookup.year}`;
-}
-
-async function main()
-{
-    const tadas = await readTadas();
-    const lastUpdateId = getLastUpdateId(tadas);
-    console.log(`Last update id: ${lastUpdateId}`);
-
-    const updates = await fetchNewMessages(lastUpdateId);
-    if (updates.length === 0)
-    {
-        console.log("No new messages.");
-        return;
+        const parts = new Intl.DateTimeFormat("en-GB", {
+            timeZone: "Europe/London",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+        }).formatToParts(date);
+        const lookup = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+        return `${lookup.day}/${lookup.month}/${lookup.year}`;
     }
 
-    console.log(`Fetched ${updates.length} update(s) from Telegram.`);
-
-    for (const update of updates)
+    async function main()
     {
-        const msg = update.message;
-        if (!msg) continue;
+        const tadas = await readTadas();
+        const lastUpdateId = getLastUpdateId(tadas);
+        console.log(`Last update id: ${lastUpdateId}`);
 
-        // Always record the update, even on failure, so a bad message can't block the offset forever.
-        let source = "text";
-        let text = "[failed to process message]";
-
-        try
+        const updates = await fetchNewMessages(lastUpdateId);
+        if (updates.length === 0)
         {
-            if (msg.voice)
-            {
-                source = "voice";
-                console.log(`Message with update id ${update.update_id} is of type: Voice`);
-                const audioBuffer = await downloadVoiceFile(msg.voice.file_id, update.update_id);
-                text = await transcribe(audioBuffer, update.update_id);
-            } else if (msg.text)
-            {
-                source = "text";
-                console.log(`Message with update id ${update.update_id} is of type: Text`);
-                text = msg.text;
-            } else
-            {
-                source = "unsupported";
-                text = "[unsupported message type]";
-            }
-        } catch (err)
-        {
-            console.error(`Failed to process update ${update.update_id}: ${err.message}`);
+            console.log("No new messages.");
+            return;
         }
 
-        tadas.push({
-            date: formatDate(new Date()),
-            text,
-            source,
-            update_id: update.update_id,
-        });
-        console.log(`Logging tada from ${update.update_id} to file`);
+        console.log(`Fetched ${updates.length} update(s) from Telegram.`);
+
+        for (const update of updates)
+        {
+            const msg = update.message;
+            if (!msg) continue;
+
+            // Always record the update, even on failure, so a bad message can't block the offset forever.
+            let source = "text";
+            let text = "[failed to process message]";
+
+            try
+            {
+                if (msg.voice)
+                {
+                    source = "voice";
+                    console.log(`Message with update id ${update.update_id} is of type: Voice`);
+                    const audioBuffer = await downloadVoiceFile(msg.voice.file_id, update.update_id);
+                    text = await transcribe(audioBuffer, update.update_id);
+                } else if (msg.text)
+                {
+                    source = "text";
+                    console.log(`Message with update id ${update.update_id} is of type: Text`);
+                    text = msg.text;
+                } else
+                {
+                    source = "unsupported";
+                    text = "[unsupported message type]";
+                }
+            } catch (err)
+            {
+                console.error(`Failed to process update ${update.update_id}: ${err.message}`);
+            }
+
+            tadas.push({
+                date: formatDate(new Date()),
+                text,
+                source,
+                update_id: update.update_id,
+            });
+            console.log(`Logging tada from ${update.update_id} to file`);
+        }
+
+        await fs.writeFile(TADAS_PATH, JSON.stringify(tadas, null, 2) + "\n");
+        console.log(`Wrote ${updates.length} tada(s) to ${TADAS_PATH}`);
     }
 
-    await fs.writeFile(TADAS_PATH, JSON.stringify(tadas, null, 2) + "\n");
-    console.log(`Wrote ${updates.length} tada(s) to ${TADAS_PATH}`);
-}
-
-main().catch((err) =>
-{
-    console.error(err);
-    process.exit(1);
-});
+    main().catch((err) =>
+    {
+        console.error(err);
+        process.exit(1);
+    });
