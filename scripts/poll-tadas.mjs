@@ -29,8 +29,8 @@ if (!OPENAI_API_KEY)
 
 async function readTadas()
 {
-    const raw = await fs.readFile(TADAS_PATH, "utf-8").catch(() => "[]");
-    return JSON.parse(raw || "[]");
+    const file_contents = await fs.readFile(TADAS_PATH, "utf-8").catch(() => "[]");
+    return JSON.parse(file_contents || "[]");
 }
 
 function getLastUpdateId(tadas)
@@ -40,6 +40,8 @@ function getLastUpdateId(tadas)
 
 async function fetchNewMessages(offset)
 {
+    console.log("Polling Telegram bot for latest messages");
+    console.log(`Last update id is ${offset}`);
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?offset=${offset + 1}&timeout=0`;
     const resp = await fetch(url);
     const data = await resp.json();
@@ -47,23 +49,26 @@ async function fetchNewMessages(offset)
     {
         throw new Error(`Telegram getUpdates failed: ${JSON.stringify(data)}`);
     }
+    console.log(`Number of new messages retrieved from Telegram bot: ${(data.result ?? []).length}`);
     return data.result ?? [];
 }
 
-async function downloadVoiceFile(fileId)
+async function downloadVoiceFile(fileId, updateId)
 {
-    const infoResp = await fetch(
+    console.log(`Downloading voice file for message with update id ${updateId}`);
+    const voiceFile = await fetch(
         `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getFile?file_id=${fileId}`,
     );
-    const infoData = await infoResp.json();
-    const filePath = infoData.result.file_path;
-    const fileUrl = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${filePath}`;
-    const fileResp = await fetch(fileUrl);
-    return Buffer.from(await fileResp.arrayBuffer());
+    const voiceFileData = await voiceFile.json();
+    const voiceFilePath = voiceFileData.result.file_path;
+    const voiceFileUrl = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${voiceFilePath}`;
+    const voicefileResp = await fetch(voiceFileUrl);
+    return Buffer.from(await voicefileResp.arrayBuffer());
 }
 
-async function transcribe(audioBuffer)
+async function transcribe(audioBuffer, updateId)
 {
+    console.log(`Transcribing voice content for message with update id ${updateId}`);
     const form = new FormData();
     form.append("file", new Blob([audioBuffer], { type: "audio/ogg" }), "voice.ogg");
     form.append("model", "whisper-1");
@@ -122,11 +127,13 @@ async function main()
             if (msg.voice)
             {
                 source = "voice";
-                const audioBuffer = await downloadVoiceFile(msg.voice.file_id);
-                text = await transcribe(audioBuffer);
+                console.log(`Message with update id ${update.update_id} is of type: Voice`);
+                const audioBuffer = await downloadVoiceFile(msg.voice.file_id, update.update_id);
+                text = await transcribe(audioBuffer, update.update_id);
             } else if (msg.text)
             {
                 source = "text";
+                console.log(`Message with update id ${update.update_id} is of type: Text`);
                 text = msg.text;
             } else
             {
@@ -144,6 +151,7 @@ async function main()
             source,
             update_id: update.update_id,
         });
+        console.log(`Logging tada from ${update.update_id} to file`);
     }
 
     await fs.writeFile(TADAS_PATH, JSON.stringify(tadas, null, 2) + "\n");
