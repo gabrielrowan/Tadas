@@ -97,81 +97,82 @@ async function transcribe(audioBuffer, updateId)
         : message;
 
     return message_without_full_stop || "[transcription failed]";
+}
 
-    function formatDate(date)
+function formatDate(date)
+{
+    const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/London",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+    }).formatToParts(date);
+    const lookup = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+    return `${lookup.day}/${lookup.month}/${lookup.year}`;
+}
+
+async function main()
+{
+    const tadas = await readTadas();
+    const lastUpdateId = getLastUpdateId(tadas);
+    console.log(`Last update id: ${lastUpdateId}`);
+
+    const updates = await fetchNewMessages(lastUpdateId);
+    if (updates.length === 0)
     {
-        const parts = new Intl.DateTimeFormat("en-GB", {
-            timeZone: "Europe/London",
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-        }).formatToParts(date);
-        const lookup = Object.fromEntries(parts.map((p) => [p.type, p.value]));
-        return `${lookup.day}/${lookup.month}/${lookup.year}`;
+        console.log("No new messages.");
+        return;
     }
 
-    async function main()
+    console.log(`Fetched ${updates.length} update(s) from Telegram.`);
+
+    for (const update of updates)
     {
-        const tadas = await readTadas();
-        const lastUpdateId = getLastUpdateId(tadas);
-        console.log(`Last update id: ${lastUpdateId}`);
+        const msg = update.message;
+        if (!msg) continue;
 
-        const updates = await fetchNewMessages(lastUpdateId);
-        if (updates.length === 0)
+        // Always record the update, even on failure, so a bad message can't block the offset forever.
+        let source = "text";
+        let text = "[failed to process message]";
+
+        try
         {
-            console.log("No new messages.");
-            return;
-        }
-
-        console.log(`Fetched ${updates.length} update(s) from Telegram.`);
-
-        for (const update of updates)
-        {
-            const msg = update.message;
-            if (!msg) continue;
-
-            // Always record the update, even on failure, so a bad message can't block the offset forever.
-            let source = "text";
-            let text = "[failed to process message]";
-
-            try
+            if (msg.voice)
             {
-                if (msg.voice)
-                {
-                    source = "voice";
-                    console.log(`Message with update id ${update.update_id} is of type: Voice`);
-                    const audioBuffer = await downloadVoiceFile(msg.voice.file_id, update.update_id);
-                    text = await transcribe(audioBuffer, update.update_id);
-                } else if (msg.text)
-                {
-                    source = "text";
-                    console.log(`Message with update id ${update.update_id} is of type: Text`);
-                    text = msg.text;
-                } else
-                {
-                    source = "unsupported";
-                    text = "[unsupported message type]";
-                }
-            } catch (err)
+                source = "voice";
+                console.log(`Message with update id ${update.update_id} is of type: Voice`);
+                const audioBuffer = await downloadVoiceFile(msg.voice.file_id, update.update_id);
+                text = await transcribe(audioBuffer, update.update_id);
+            } else if (msg.text)
             {
-                console.error(`Failed to process update ${update.update_id}: ${err.message}`);
+                source = "text";
+                console.log(`Message with update id ${update.update_id} is of type: Text`);
+                text = msg.text;
+            } else
+            {
+                source = "unsupported";
+                text = "[unsupported message type]";
             }
-
-            tadas.push({
-                date: formatDate(new Date()),
-                text,
-                source,
-                update_id: update.update_id,
-            });
-            console.log(`Logging tada from ${update.update_id} to file`);
+        } catch (err)
+        {
+            console.error(`Failed to process update ${update.update_id}: ${err.message}`);
         }
 
-        await fs.writeFile(TADAS_PATH, JSON.stringify(tadas, null, 2) + "\n");
-        console.log(`Wrote ${updates.length} tada(s) to ${TADAS_PATH}`);
+        tadas.push({
+            date: formatDate(new Date()),
+            text,
+            source,
+            update_id: update.update_id,
+        });
+        console.log(`Logging tada from ${update.update_id} to file`);
     }
 
-    main().catch((err) =>
-    {
-        console.error(err);
-        process.exit(1);
-    });
+    await fs.writeFile(TADAS_PATH, JSON.stringify(tadas, null, 2) + "\n");
+    console.log(`Wrote ${updates.length} tada(s) to ${TADAS_PATH}`);
+}
+
+main().catch((err) =>
+{
+    console.error(err);
+    process.exit(1);
+});
