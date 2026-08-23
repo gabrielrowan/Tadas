@@ -48,19 +48,35 @@ function formatDayHeading(iso: string) {
     });
 }
 
+function parseDateKey(date_key: string): Date {
+    const [day, month, year] = date_key.split('-').map(Number);
+    return new Date(year, month - 1, day);
+}
+
+function dayRank(date_label: string): number {
+    if (date_label === "Today") return 0;
+    if (date_label === "Yesterday") return 1;
+    return 2;
+}
+
 function groupByDay(
     tadas: Tada[],
 ): { date: string; date_label: string; items: Tada[] }[] {
-    const groups: Record<string, { date_label: string; items: Tada[] }> = {};
+    const tada_grouped_by_date: Record<string, { date_label: string; items: Tada[] }> = {};
     for (const tada of tadas) {
         const achieved_date = new Date(tada.achieved_at);
-        const key = `${String(achieved_date.getDate()).padStart(2, '0')}-${String(achieved_date.getMonth() + 1).padStart(2, '0')}-${achieved_date.getFullYear()}`;
-        if (!groups[key]) {
-            groups[key] = { date_label: formatDayHeading(tada.achieved_at), items: [] };
+        const date_key = `${String(achieved_date.getDate()).padStart(2, '0')}-${String(achieved_date.getMonth() + 1).padStart(2, '0')}-${achieved_date.getFullYear()}`;
+        if (!tada_grouped_by_date[date_key]) {
+            tada_grouped_by_date[date_key] = { date_label: formatDayHeading(tada.achieved_at), items: [] };
         }
-        groups[key].items.push(tada);
+        tada_grouped_by_date[date_key].items.push(tada);
     }
-    return Object.entries(groups).map(([date, g]) => ({ date, ...g }));
+    const groups = Object.entries(tada_grouped_by_date).map(([date, tada_meta]) => ({ date, ...tada_meta }));
+    return groups.sort((a, b) => {
+        const rank_diff = dayRank(a.date_label) - dayRank(b.date_label);
+        if (rank_diff !== 0) return rank_diff;
+        return parseDateKey(b.date).getTime() - parseDateKey(a.date).getTime();
+    });
 }
 
 export { groupByDay };

@@ -156,7 +156,7 @@ async function main()
     }
 
     await fs.writeFile(TADAS_PATH, JSON.stringify(tadas, null, 2) + "\n");
-    console.log(`Wrote ${tadas.length} tada(s) to ${TADAS_PATH}`);
+    console.log(`Wrote ${updates.length} tada(s) to ${TADAS_PATH}`);
 }
 
 main().catch((err) =>
