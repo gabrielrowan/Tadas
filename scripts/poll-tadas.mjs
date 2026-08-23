@@ -74,7 +74,6 @@ async function transcribe(audioBuffer, updateId)
     form.append("model", "whisper-1");
     form.append("language", "en");
     form.append("prompt", `Always start transcribed text with a capital letter. 
-                Do not end the last sentence with a full stop.
                 This audio is a recording of an everyday achievement. 
                 This is called a 'tada', which is the equivalent of a 'todo'.
                 It means a task done instead of a task still to do.
@@ -91,7 +90,13 @@ async function transcribe(audioBuffer, updateId)
     {
         throw new Error(`Whisper transcription failed: ${JSON.stringify(data)}`);
     }
-    return (data.text || "[transcription failed]").trim();
+
+    message = data.text
+    if (message.slice(-1) === '.')
+    {
+        message = message.slice(0, -1)
+    }
+    return (message || "[transcription failed]").trim();
 }
 
 function formatDate(date)
