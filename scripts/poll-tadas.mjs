@@ -73,6 +73,13 @@ async function transcribe(audioBuffer, updateId)
     form.append("file", new Blob([audioBuffer], { type: "audio/ogg" }), "voice.ogg");
     form.append("model", "whisper-1");
     form.append("language", "en");
+    form.append("prompt", `Always start transcribed text with a capital letter. 
+                Do not end the last sentence with a full stop.
+                This audio is a recording of an everyday achievement. 
+                This is called a 'tada', which is the equivalent of a 'todo'.
+                It means a task done instead of a task still to do.
+                Anytime you hear the word 'tada', even if it sounds like 'tadar', write it as 'tada'. 
+                You can capitalise the word 'tada' if it is at the beginning of a sentence.`)
 
     const resp = await fetch("https://api.openai.com/v1/audio/transcriptions", {
         method: "POST",
