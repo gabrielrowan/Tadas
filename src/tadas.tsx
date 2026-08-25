@@ -6,11 +6,13 @@ interface Tada {
     id: number;
     achieved_at: string;
     achievement: string;
+    category: string;
 }
 
 interface TadaFileEntry {
     date: string;
     text: string;
+    category: string;
 }
 
 async function readTadas(): Promise<Tada[]> {
@@ -22,6 +24,7 @@ async function readTadas(): Promise<Tada[]> {
             id: index + 1,
             achieved_at: `${year}-${month}-${day}`,
             achievement: tada.text,
+            category: tada.category,
         };
     });
 }

@@ -12,7 +12,9 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
+import OpenAI from "openai";
 
+const openai = new OpenAI();
 const TADAS_PATH = path.join(process.cwd(), "public", "data", "tadas.json");
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -73,12 +75,10 @@ async function transcribe(audioBuffer, updateId)
     form.append("file", new Blob([audioBuffer], { type: "audio/ogg" }), "voice.ogg");
     form.append("model", "whisper-1");
     form.append("language", "en");
-    form.append("prompt", `Always start transcribed text with a capital letter. 
-                This audio is a recording of an everyday achievement. 
+    form.append("prompt", ` 
                 This is called a 'tada', which is the equivalent of a 'todo'.
                 It means a task done instead of a task still to do.
-                Anytime you hear the word 'tada', even if it sounds like 'tadar', write it as 'tada'. 
-                You can capitalise the word 'tada' if it is at the beginning of a sentence.`)
+                Anytime you hear the word 'tada', even if it sounds like 'tadar', write it as 'tada'.`)
 
     const resp = await fetch("https://api.openai.com/v1/audio/transcriptions", {
         method: "POST",
@@ -91,12 +91,68 @@ async function transcribe(audioBuffer, updateId)
         throw new Error(`Whisper transcription failed: ${JSON.stringify(data)}`);
     }
 
-    const message = (data.text || "").trim();
-    const message_without_full_stop = message.endsWith(".")
-        ? message.slice(0, -1).trim()
+    let message = (data.text || "").trim();
+    message = message.endsWith(".") ? message.slice(0, -1).trim() : message;
+    message = message.length > 0
+        ? String(message).charAt(0).toUpperCase() + String(message).slice(1)
         : message;
 
-    return message_without_full_stop || "[transcription failed]";
+    return message || "[transcription failed]";
+}
+
+async function categoriseTada(message)
+{
+    const completion = await openai.chat.completions.create({
+        messages: [{
+            role: "developer", content: `Output a label for what this message is about.
+                                                There are the only options: 'Cooking', 'Cleaning', 'Languages', 'Tech', 'Creativity', 'Exercise', 'Exploration'
+                                                If you do not know, put the label as 'Unknown'.
+                                                Labels can only be 1 word.
+                                                Examples of messages and their associated labels:
+                                                'Cooked a meal today', 'Cooking'
+                                                'Discovered a recipe today', 'Cooking'
+                                                'Tried out a new recipe today', 'Cooking'
+                                                'Bought some exciting new ingredients today', 'Cooking'
+                                                'Tidied my flat today', 'Cleaning'
+                                                'Did the washing up today', 'Cleaning'
+                                                'Changed my bedsheets today', 'Cleaning'
+                                                'Gave a lot of clothes to charity today', 'Cleaning'
+                                                'Did a big clear out today', 'Cleaning',
+                                                'Learnt a new word in Japanese today', 'Languages'
+                                                'Spoke Japanese in a Japanese class today', 'Languages',
+                                                'Spoke French to someone today', 'Languages',
+                                                'Watched a film in Spanish today', 'Languages',
+                                                'Learnt 3 new kanji today', 'Languages', 
+                                                'Learnt a new linux command today', 'Tech', 
+                                                'Refactored a difficult section of Python code', 'Tech', 
+                                                'Learnt how to use a github action', 'Tech',
+                                                'Created an ansible playbook', 'Tech', 
+                                                'Used the AWS APIs", 'Tech',
+                                                'Drew a picture today', 'Creativity'
+                                                'Made a skirt', 'Creativity',
+                                                'Followed a pattern to make a headband', 'Creativity',
+                                                'Made a collage', 'Creativity',
+                                                'Put effort into how I dressed today', 'Creativity', 
+                                                'Went to the gym', 'Exercise',
+                                                'Went swimming, 'Exercise', 
+                                                'Did some weights', 'Exercise'
+                                                'Did a youtube workout', 'Exercise'
+                                                'Saw the Northern lights!', 'Exploration',
+                                                'Went to a new city', 'Exploration', 
+                                                'Went on a food tour', 'Exploration'
+                                                'Visited a new place for the first time', 'Exploration' ` }],
+        model: "GPT-4o-mini",
+        temperature: 0.1
+    });
+
+    const category = (completion.choices[0]?.message?.content ?? "").trim();
+    if (category.includes(" "))
+    {
+        console.log(`The model has output a category that is more than 1 word. The message was ${message}`)
+        throw new Error('Expected category length exceeded error')
+    }
+
+    return category || "Unknown"
 }
 
 function formatDate(date)
@@ -158,13 +214,26 @@ async function main()
             console.error(`Failed to process update ${update.update_id}: ${err.message}`);
         }
 
-        tadas.push({
+        let category;
+        try
+        {
+            category = await categoriseTada(text);
+        } catch (e)
+        {
+            console.log(e)
+        }
+
+        const tada = {
             date: formatDate(new Date()),
             text,
             source,
             update_id: update.update_id,
-        });
+            category: category || 'Unknown'
+        };
+        tadas.push(tada);
         console.log(`Logging tada from ${update.update_id} to file`);
+        console.log(`New tada is: ${tada}`);
+
     }
 
     await fs.writeFile(TADAS_PATH, JSON.stringify(tadas, null, 2) + "\n");

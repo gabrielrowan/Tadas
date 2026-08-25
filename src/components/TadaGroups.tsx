@@ -13,7 +13,7 @@ export function TadaGroups({ groups }: { groups: ReturnType<typeof groupByDay> }
                     </div>
 
                     {group.items.map((tada) => (
-                        <TadaCard key={tada.id} text={tada.achievement} />
+                        <TadaCard key={tada.id} text={tada.achievement} category={tada.category} />
                     ))}
                 </div>
             ))}
