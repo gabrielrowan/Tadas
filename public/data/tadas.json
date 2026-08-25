@@ -64,5 +64,26 @@
     "text": "Was happy with the fabric I bought for the next time I make a skirt",
     "source": "voice",
     "update_id": 510318147
+  },
+  {
+    "date": "25/08/2026",
+    "text": "Did the washing up",
+    "source": "voice",
+    "update_id": 510318148,
+    "category": "Unknown"
+  },
+  {
+    "date": "25/08/2026",
+    "text": "Painted a picture",
+    "source": "voice",
+    "update_id": 510318149,
+    "category": "Unknown"
+  },
+  {
+    "date": "25/08/2026",
+    "text": "Found out something new about BASH?",
+    "source": "voice",
+    "update_id": 510318150,
+    "category": "Unknown"
   }
 ]
