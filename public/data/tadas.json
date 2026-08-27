@@ -124,5 +124,26 @@
     "source": "voice",
     "update_id": 510318154,
     "category": "Creativity"
+  },
+  {
+    "date": "27/08/2026",
+    "text": "Tidied my flat",
+    "source": "voice",
+    "update_id": 510318155,
+    "category": "Cleaning"
+  },
+  {
+    "date": "27/08/2026",
+    "text": "Learn to new word in Japanese",
+    "source": "voice",
+    "update_id": 510318156,
+    "category": "Languages"
+  },
+  {
+    "date": "27/08/2026",
+    "text": "Cooked a meal following a new recipe",
+    "source": "voice",
+    "update_id": 510318157,
+    "category": "Cooking"
   }
 ]
