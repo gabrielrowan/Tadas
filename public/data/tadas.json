@@ -145,5 +145,12 @@
     "source": "voice",
     "update_id": 510318157,
     "category": "Cooking"
+  },
+  {
+    "date": "27/08/2026",
+    "text": "Got OpenAI to generate the labels for my tada project",
+    "source": "voice",
+    "update_id": 510318158,
+    "category": "Tech"
   }
 ]
