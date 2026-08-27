@@ -9,16 +9,18 @@
  *   TELEGRAM_BOT_TOKEN
  *   OPENAI_API_KEY
  */
-
-import fs from "node:fs/promises";
+import fs from "node:fs";
+import fsPromises from "node:fs/promises";
 import path from "node:path";
+import { parse } from "csv-parse/sync";
 import OpenAI from "openai";
+
 
 const openai = new OpenAI();
 const TADAS_PATH = path.join(process.cwd(), "public", "data", "tadas.json");
-
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
 
 if (!TELEGRAM_BOT_TOKEN)
 {
@@ -29,9 +31,87 @@ if (!OPENAI_API_KEY)
     throw new Error("Missing OPENAI_API_KEY env var");
 }
 
+const CATEGORIES = [
+    "Cooking",
+    "Cleaning",
+    "Languages",
+    "Tech",
+    "Creativity",
+    "Exercise",
+    "Exploration",
+    "Unknown",
+];
+
+const SYSTEM_PROMPT = `You classify short log entries of personal achievements ("tadas") into exactly one category.
+
+Valid categories: ${CATEGORIES.join(", ")}.
+
+You will be shown examples of previously labeled messages before the one you
+need to classify. Use them as a guide for how similar messages have been
+categorised. If nothing clearly applies, use "Unknown".`;
+
+// Returns data rows from labelled dataset
+function loadData()
+{
+    const csvPath = "/public/data/labeled_data.csv";
+    const data = fs.readFileSync(csvPath, 'utf8');
+    const rows = parse(data, { columns: true, skip_empty_lines: true, trim: true });
+    return rows.map((r) => ({ text: r.Message, category: r.Label }));
+}
+
+// Turn labeled rows into input-ouput pairs
+function formatPromptExamples(data_rows)
+{
+    const input_output_pairs = [];
+    for (const row of data_rows)
+    {
+        input_output_pairs.push({ role: "user", content: row.text });
+        input_output_pairs.push({
+            role: "assistant",
+            content: JSON.stringify({ category: row.category }),
+        });
+    }
+    return input_output_pairs;
+}
+
+const LABELLED_DATA = loadData();
+const INPUT_OUTPUT_PAIRS = formatPromptExamples(LABELLED_DATA);
+
+// Classify a single message
+async function categoriseTada(text)
+{
+    const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0.1,
+        messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            ...INPUT_OUTPUT_PAIRS,
+            { role: "user", content: text },
+        ],
+        response_format: {
+            type: "json_schema",
+            json_schema: {
+                name: "category_label",
+                strict: true,
+                schema: {
+                    type: "object",
+                    properties: {
+                        category: { type: "string", enum: CATEGORIES },
+                    },
+                    required: ["category"],
+                    additionalProperties: false,
+                },
+            },
+        },
+    });
+
+    const parsed = JSON.parse(completion.choices[0].message.content);
+    return parsed.category;
+}
+
 async function readTadas()
 {
-    const file_contents = await fs.readFile(TADAS_PATH, "utf-8").catch(() => "[]");
+    const file_contents = await fsPromises.readFile(TADAS_PATH, "utf-8").catch(() => "[]");
     return JSON.parse(file_contents || "[]");
 }
 
@@ -100,60 +180,6 @@ async function transcribe(audioBuffer, updateId)
     return message || "[transcription failed]";
 }
 
-async function categoriseTada(message)
-{
-    const completion = await openai.chat.completions.create({
-        messages: [{
-            role: "developer", content: `Output a label for what this message is about.
-                                                There are the only options: 'Cooking', 'Cleaning', 'Languages', 'Tech', 'Creativity', 'Exercise', 'Exploration'
-                                                If you do not know, put the label as 'Unknown'.
-                                                Labels can only be 1 word.
-                                                Examples of messages and their associated labels:
-                                                'Cooked a meal today', 'Cooking'
-                                                'Discovered a recipe today', 'Cooking'
-                                                'Tried out a new recipe today', 'Cooking'
-                                                'Bought some exciting new ingredients today', 'Cooking'
-                                                'Tidied my flat today', 'Cleaning'
-                                                'Did the washing up today', 'Cleaning'
-                                                'Changed my bedsheets today', 'Cleaning'
-                                                'Gave a lot of clothes to charity today', 'Cleaning'
-                                                'Did a big clear out today', 'Cleaning',
-                                                'Learnt a new word in Japanese today', 'Languages'
-                                                'Spoke Japanese in a Japanese class today', 'Languages',
-                                                'Spoke French to someone today', 'Languages',
-                                                'Watched a film in Spanish today', 'Languages',
-                                                'Learnt 3 new kanji today', 'Languages', 
-                                                'Learnt a new linux command today', 'Tech', 
-                                                'Refactored a difficult section of Python code', 'Tech', 
-                                                'Learnt how to use a github action', 'Tech',
-                                                'Created an ansible playbook', 'Tech', 
-                                                'Used the AWS APIs", 'Tech',
-                                                'Drew a picture today', 'Creativity'
-                                                'Made a skirt', 'Creativity',
-                                                'Followed a pattern to make a headband', 'Creativity',
-                                                'Made a collage', 'Creativity',
-                                                'Put effort into how I dressed today', 'Creativity', 
-                                                'Went to the gym', 'Exercise',
-                                                'Went swimming, 'Exercise', 
-                                                'Did some weights', 'Exercise'
-                                                'Did a youtube workout', 'Exercise'
-                                                'Saw the Northern lights!', 'Exploration',
-                                                'Went to a new city', 'Exploration', 
-                                                'Went on a food tour', 'Exploration'
-                                                'Visited a new place for the first time', 'Exploration' ` }],
-        model: "GPT-4o-mini",
-        temperature: 0.1
-    });
-
-    const category = (completion.choices[0]?.message?.content ?? "").trim();
-    if (category.includes(" "))
-    {
-        console.log(`The model has output a category that is more than 1 word. The message was ${message}`)
-        throw new Error('Expected category length exceeded error')
-    }
-
-    return category || "Unknown"
-}
 
 function formatDate(date)
 {
@@ -232,11 +258,11 @@ async function main()
         };
         tadas.push(tada);
         console.log(`Logging tada from ${update.update_id} to file`);
-        console.log(`New tada is: ${tada}`);
+        console.log(`New tada is: ${JSON.stringify(tada)}`);
 
     }
 
-    await fs.writeFile(TADAS_PATH, JSON.stringify(tadas, null, 2) + "\n");
+    await fsPromises.writeFile(TADAS_PATH, JSON.stringify(tadas, null, 2) + "\n");
     console.log(`Wrote ${updates.length} tada(s) to ${TADAS_PATH}`);
 }
 

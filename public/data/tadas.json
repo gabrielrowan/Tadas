@@ -3,66 +3,77 @@
     "date": "23/08/2026",
     "text": "Did a second layer of embroidery on my bag.",
     "source": "voice",
-    "update_id": 510318135
+    "update_id": 510318135,
+    "category": "Creativity"
   },
   {
     "date": "23/08/2026",
     "text": "Learnt the word for event in Japanese means a thing that comes and goes.",
     "source": "voice",
-    "update_id": 510318136
+    "update_id": 510318136,
+    "category": "Languages"
   },
   {
     "date": "23/08/2026",
     "text": "Went for a walk today when I didn't think I would leave the flat.",
     "source": "voice",
-    "update_id": 510318139
+    "update_id": 510318139,
+    "category": "Exercise"
   },
   {
     "date": "23/08/2026",
     "text": "Washed my bedsheets",
     "source": "voice",
-    "update_id": 510318140
+    "update_id": 510318140,
+    "category": "Cleaning"
   },
   {
     "date": "23/08/2026",
     "text": "Got GitHub automated flow working where I can now record a tada and have it appear automatically on the tada website.",
     "source": "voice",
-    "update_id": 510318141
+    "update_id": 510318141,
+    "category": "Tech"
   },
   {
     "date": "23/08/2026",
     "text": "Added additional prompt to open API transcription call, which will helpfully correct the spelling of the word tada.",
     "source": "voice",
-    "update_id": 510318142
+    "update_id": 510318142,
+    "category": "Tech"
   },
   {
     "date": "23/08/2026",
     "text": "Learn that the word for to write in Japanese also means to draw or to paint. The verb to write in Japanese contains the kanji for brush. A brush can be used to write or to paint or to draw",
     "source": "voice",
-    "update_id": 510318143
+    "update_id": 510318143,
+    "category": "Languages"
   },
   {
     "date": "23/08/2026",
     "text": "Learn the Japanese words for to write and letter today",
     "source": "voice",
-    "update_id": 510318144
+    "update_id": 510318144,
+    "category": "Languages"
   },
   {
     "date": "25/08/2026",
     "text": "Used IP tables at work for the first time",
     "source": "voice",
-    "update_id": 510318145
+    "update_id": 510318145,
+    "category": "Tech"
   },
   {
     "date": "25/08/2026",
     "text": "ate dinner that I had prepared the previous day",
     "source": "voice",
-    "update_id": 510318146
+    "update_id": 510318146,
+    "category": "Cooking"
   },
   {
     "date": "25/08/2026",
     "text": "Was happy with the fabric I bought for the next time I make a skirt",
     "source": "voice",
-    "update_id": 510318147
+    "update_id": 510318147,
+    "category": "Creativity"
   }
 ]

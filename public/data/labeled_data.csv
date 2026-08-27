@@ -1,0 +1,33 @@
+Message,Label
+Cooked a meal today,Cooking
+Discovered a recipe today,Cooking
+Tried out a new recipe today,Cooking
+Bought some exciting new ingredients today,Cooking
+Tidied my flat today,Cleaning
+Did the washing up today,Cleaning
+Changed my bedsheets today,Cleaning
+Gave a lot of clothes to charity today,Cleaning
+Did a big clear out today,Cleaning
+Learnt a new word in Japanese today,Languages
+Spoke Japanese in a Japanese class today,Languages
+Spoke French to someone today,Languages
+Watched a film in Spanish today,Languages
+Learnt 3 new kanji today,Languages
+Learnt a new linux command today,Tech
+Refactored a difficult section of Python code,Tech
+Learnt how to use a github action,Tech
+Created an ansible playbook,Tech
+Used the AWS APIs,Tech
+Drew a picture today,Creativity
+Made a skirt,Creativity
+Followed a pattern to make a headband,Creativity
+Made a collage,Creativity
+Put effort into how I dressed today,Creativity
+Went to the gym,Exercise
+Went swimming,Exercise
+Did some weights,Exercise
+Did a youtube workout,Exercise
+Saw the Northern lights!,Exploration
+Went to a new city,Exploration
+Went on a food tour,Exploration
+Visited a new place for the first time,Exploration
