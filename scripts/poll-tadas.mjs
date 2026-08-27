@@ -53,7 +53,7 @@ categorised. If nothing clearly applies, use "Unknown".`;
 // Returns data rows from labelled dataset
 function loadData()
 {
-    const csvPath = "/public/data/labeled_data.csv";
+    const csvPath = path.join(process.cwd(), "public", "data", "labeled_data.csv");
     const data = fs.readFileSync(csvPath, 'utf8');
     const rows = parse(data, { columns: true, skip_empty_lines: true, trim: true });
     return rows.map((r) => ({ text: r.Message, category: r.Label }));
