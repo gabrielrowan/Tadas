@@ -81,48 +81,48 @@
     "text": "Did the washing up",
     "source": "voice",
     "update_id": 510318148,
-    "category": "Unknown"
+    "category": "Cleaning"
   },
   {
     "date": "25/08/2026",
     "text": "Painted a picture",
     "source": "voice",
     "update_id": 510318149,
-    "category": "Unknown"
+    "category": "Creativity"
   },
   {
     "date": "25/08/2026",
-    "text": "Found out something new about BASH?",
+    "text": "Found out something new about BASH",
     "source": "voice",
     "update_id": 510318150,
-    "category": "Unknown"
+    "category": "Tech"
   },
   {
     "date": "26/08/2026",
     "text": "Made an amazing lunch today",
     "source": "voice",
     "update_id": 510318151,
-    "category": "Unknown"
+    "category": "Cooking"
   },
   {
     "date": "27/08/2026",
     "text": "Drew a beautiful goose",
     "source": "voice",
     "update_id": 510318152,
-    "category": "Unknown"
+    "category": "Creativity"
   },
   {
     "date": "27/08/2026",
     "text": "Revised katakana words in Japanese relating to the theme net cafe",
     "source": "voice",
     "update_id": 510318153,
-    "category": "Unknown"
+    "category": "Languages"
   },
   {
     "date": "27/08/2026",
     "text": "Ordered a new t-shirt with my own custom design for This is Water",
     "source": "voice",
     "update_id": 510318154,
-    "category": "Unknown"
+    "category": "Creativity"
   }
 ]
